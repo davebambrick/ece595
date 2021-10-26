@@ -5,15 +5,15 @@
 #include <sstream>
 #include <ctype.h>
 
-// Pair2D constructor and operators
+// Pair2D constructor
 Pair2D::Pair2D(int x, int y) : x(x), y(y) {}
+// Pair2D operators
 Pair2D Pair2D::operator+(const Pair2D& other) {
 	return Pair2D(x+other.x, y+other.y);
 }
 Pair2D Pair2D::operator-(const Pair2D& other) {
 	return Pair2D(x-other.x, y-other.y);
 }
-
 bool Pair2D::operator==(const Pair2D& other) {
 	return (x == other.x && y == other.y);
 }
