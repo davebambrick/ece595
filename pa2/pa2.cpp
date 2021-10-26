@@ -18,9 +18,10 @@ bool Pair2D::operator==(const Pair2D& other) {
 	return (x == other.x && y == other.y);
 }
 
-// BlockNode constructor and wrapper function to create new nodes
+// BlockNode constructor  
 BlockNode::BlockNode(const NodeData& data) : label(data.label), 
 	cutType(data.cutType),  dimVec(data.dimVec) {}
+// wrapper function to create new BlockNodes via shared_ptrs
 shared_ptr<BlockNode> newNode(NodeData& data) {
     auto nodePtr = make_shared<BlockNode>(data);
     return nodePtr;
