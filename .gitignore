@@ -1,0 +1,10 @@
+# VS Code 
+*/.vscode
+# Mac
+*/.DS_Store
+# debugger logging
+*/*.dSYM
+# archives
+*/*.zip
+# output files
+*/out
