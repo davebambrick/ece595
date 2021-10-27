@@ -23,12 +23,12 @@ BlockNode::BlockNode(const NodeData& data) : label(data.label),
 	cutType(data.cutType),  dimVec(data.dimVec) {}
 // wrapper function to create new BlockNodes via shared_ptrs
 shared_ptr<BlockNode> newNode(NodeData& data) {
-    auto nodePtr = make_shared<BlockNode>(data);
+    shared_ptr<BlockNode> nodePtr = make_shared<BlockNode>(data);
     return nodePtr;
 }
 // builds a tree from a text file
 shared_ptr<BlockNode> buildTree(const string& inFileName) {
-	stack<shared_ptr<BlockNode>> nodeStack;
+	stack<shared_ptr<BlockNode> > nodeStack;
 	ifstream inFile(inFileName);
 	if (inFile.is_open()) {
 		string line;
@@ -84,16 +84,16 @@ Pair2D computeFirstPackingDims(shared_ptr<BlockNode> node) {
 	if  (node->label != -1) {
 		return node->dimVec.front();
 	} else {
-		auto p1 = computeFirstPackingDims(node->left);
-		auto p2 = computeFirstPackingDims(node->right);
+		Pair2D d1 = computeFirstPackingDims(node->left);
+		Pair2D d2 = computeFirstPackingDims(node->right);
 		// horizontal cut
 		if (node->cutType == "H") {
-			Pair2D dims(max(p1.x, p2.x), p1.y+p2.y);
+			Pair2D dims(max(d1.x, d2.x), d1.y+d2.y);
 			node->dimVec.push_back(dims);
 			return dims;
 		// vertical cut
 		} else {
-			Pair2D dims(p1.x+p2.x, max(p1.y,p2.y));
+			Pair2D dims(d1.x+d2.x, max(d1.y,d2.y));
 			node->dimVec.push_back(dims);
 			return dims;
 		}
@@ -116,7 +116,7 @@ void determinePacking(shared_ptr<BlockNode> root, const string& fname) {
 void determinePackingUtil(shared_ptr<BlockNode> node, Pair2D& origin, FILE* outfile) {
 	// base case: single rectangle is set at the current origin
 	if  (node->label != -1) {
-		auto dims = node->dimVec.front();
+		Pair2D dims = node->dimVec.front();
 		fprintf(outfile, "%d((%d,%d)(%d,%d))\n", 
 			node->label, dims.x, dims.y, origin.x, origin.y);
 	} else {
@@ -138,3 +138,10 @@ void determinePackingUtil(shared_ptr<BlockNode> node, Pair2D& origin, FILE* outf
 		}
 	}
 }
+
+// void determineOptimalPacking(shared_ptr<BlockNode> root, const string& fname) {
+// ;
+// }
+// void determineOptimalPackingUtil(shared_ptr<BlockNode> node, Pair2D& origin, FILE* outfile) {
+// ;
+// }
