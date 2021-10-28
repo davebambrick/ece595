@@ -22,13 +22,13 @@ bool Pair2D::operator==(const Pair2D& other) {
 BlockNode::BlockNode(const NodeData& data) : label(data.label), 
 	cutType(data.cutType),  dimVec(data.dimVec) {}
 // wrapper function to create new BlockNodes via shared_ptrs
-shared_ptr<BlockNode> newNode(NodeData& data) {
-    shared_ptr<BlockNode> nodePtr = make_shared<BlockNode>(data);
+BlockNodePtr newNode(NodeData& data) {
+    BlockNodePtr nodePtr = make_shared<BlockNode>(data);
     return nodePtr;
 }
 // builds a tree from a text file
-shared_ptr<BlockNode> buildTree(const string& inFileName) {
-	stack<shared_ptr<BlockNode> > nodeStack;
+BlockNodePtr buildTree(const string& inFileName) {
+	stack<BlockNodePtr > nodeStack;
 	ifstream inFile(inFileName);
 	if (inFile.is_open()) {
 		string line;
@@ -57,13 +57,13 @@ shared_ptr<BlockNode> buildTree(const string& inFileName) {
 						data.dimVec.push_back(dims);
 					}
 				}
-				shared_ptr<BlockNode> node = newNode(data);
+				BlockNodePtr node = newNode(data);
 				nodeStack.push(node);
 			// internal nodes
 			} else {
 				data.label = -1;
 				data.cutType = label;
-				shared_ptr<BlockNode> node = newNode(data);
+				BlockNodePtr node = newNode(data);
 				// pop entries from top of stack
 				node->right = nodeStack.top();
 				nodeStack.pop();
@@ -78,7 +78,7 @@ shared_ptr<BlockNode> buildTree(const string& inFileName) {
 	return nodeStack.top();
 }
 
-Pair2D computeFirstPackingDims(shared_ptr<BlockNode> node) {
+Pair2D firstPackingDims(BlockNodePtr node) {
 	// base case: packing of a single rectangle 
 	// is just its own dimensions
 	if  (node->label != -1) {
@@ -100,20 +100,22 @@ Pair2D computeFirstPackingDims(shared_ptr<BlockNode> node) {
 	}
 }
 
-void writePackingDims(Pair2D& pair, const string& fname) {
+void writePackingDims(BlockNodePtr node, 
+	std::function<BlockNodePtr(Pair2D)> dimFunc, const string& fname) {
 	FILE* outfile = fopen(fname.c_str(), "w");
+	Pair2D pair = dimFunc(node);
 	fprintf(outfile, "(%d,%d)\n", pair.x, pair.y);
 	fclose(outfile);
 }
 
-void determinePacking(shared_ptr<BlockNode> root, const string& fname) {
+void determinePacking(BlockNodePtr root, const string& fname) {
 	Pair2D origin(0,0);
 	FILE* outfile = fopen(fname.c_str(), "w");	
 	determinePackingUtil(root, origin, outfile);
 	fclose(outfile);
 }
 
-void determinePackingUtil(shared_ptr<BlockNode> node, Pair2D& origin, FILE* outfile) {
+void determinePackingUtil(BlockNodePtr node, Pair2D& origin, FILE* outfile) {
 	// base case: single rectangle is set at the current origin
 	if  (node->label != -1) {
 		Pair2D dims = node->dimVec.front();
@@ -139,9 +141,9 @@ void determinePackingUtil(shared_ptr<BlockNode> node, Pair2D& origin, FILE* outf
 	}
 }
 
-// void determineOptimalPacking(shared_ptr<BlockNode> root, const string& fname) {
+// void determineOptimalPacking(BlockNodePtr root, const string& fname) {
 // ;
 // }
-// void determineOptimalPackingUtil(shared_ptr<BlockNode> node, Pair2D& origin, FILE* outfile) {
+// void determineOptimalPackingUtil(BlockNodePtr node, Pair2D& origin, FILE* outfile) {
 // ;
 // }

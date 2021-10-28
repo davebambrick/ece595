@@ -33,18 +33,21 @@ struct BlockNode {
 	BlockNode(const NodeData& data); // from data struct
 
 };
+typedef shared_ptr<BlockNode> BlockNodePtr;
 // Tree construction methods
-shared_ptr<BlockNode> newNode(NodeData& data);
-shared_ptr<BlockNode> buildTree(const string& inFileName);
+BlockNodePtr newNode(NodeData& data);
+BlockNodePtr buildTree(const string& inFileName);
 
 // Compute dimensions of first packing
-Pair2D computeFirstPackingDims(shared_ptr<BlockNode> node);
+Pair2D computeFirstPackingDims(BlockNodePtr node);
 void writePackingDims(Pair2D& pair, const string& fname);
 
 // Determine first-option packing coordinates and write to file
-void determinePacking(shared_ptr<BlockNode> root, const string& fname);
-void determinePackingUtil(shared_ptr<BlockNode> node, Pair2D& origin, FILE* outfile);
+void determinePacking(BlockNodePtr root, const string& fname);
+void determinePackingUtil(BlockNodePtr node, Pair2D& origin, FILE* outfile);
 
+// Compute dimensions of optimal packing
+Pair2D computeOptimalPackingDims(BlockNodePtr node);
 // Determine optimal packing coordinates and write to file
-void determineOptimalPacking(shared_ptr<BlockNode> root, const string& fname);
-void determineOptimalPackingUtil(shared_ptr<BlockNode> node, Pair2D& origin, FILE* outfile);
+void determineOptimalPacking(BlockNodePtr root, const string& fname);
+void determineOptimalPackingUtil(BlockNodePtr node, Pair2D& origin, FILE* outfile);
