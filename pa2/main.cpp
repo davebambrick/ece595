@@ -21,7 +21,6 @@ int main(int argc, char *argv[]) {
 	// write packing to outfile 2
 	determineFirstPacking(root, outFileName2);
 	// write optimal dims to outfile 3
-	clearInternalNodeDims(root);
 	writePackingDims(root, computeOptimalPackingDims, outFileName3);
 	return 0;
 }
