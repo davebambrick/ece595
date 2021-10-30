@@ -16,11 +16,11 @@ int main(int argc, char *argv[]) {
 	string outFileName4{argv[5]};
 
 	shared_ptr<BlockNode> root{buildTree(inFileName)};
-	// write dims to outfile 1
+	// write first packing dims and coords to outfile 1
 	writePackingDims(root, computeFirstPackingDims, outFileName1);
-	// write packing to outfile 2
-	determineFirstPacking(root, outFileName2);
-	// write optimal dims to outfile 3
+	writePackingCoords(root, determineFirstPacking, outFileName2);
+	// write optimal packing dims and coords to outfile 3
 	writePackingDims(root, computeOptimalPackingDims, outFileName3);
+	writePackingCoords(root, determineOptimalPacking, outFileName4);
 	return 0;
 }

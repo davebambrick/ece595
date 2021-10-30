@@ -50,18 +50,18 @@ shared_ptr<BlockNode> buildTree(const string& inFileName);
 // horizontal or vertical cutlines respectively
 Pair2D getVertCutDims(const Pair2D& a, const Pair2D& b);
 Pair2D getHorizCutDims(const Pair2D& a, const Pair2D& b);
-// Wrapper to write packing to file
-void writePackingDims(shared_ptr<BlockNode> node, Pair2D (*computeDimFunc)(shared_ptr<BlockNode>), const string& fname);
+
 // Compute dimensions of first packing
 Pair2D computeFirstPackingDims(shared_ptr<BlockNode> node);
 // Determine first-option packing coordinates and write to file
-void determineFirstPacking(shared_ptr<BlockNode> root, const string& fname);
-void determineFirstPackingUtil(shared_ptr<BlockNode> node, Pair2D& origin, FILE* outfile);
+void determineFirstPacking(shared_ptr<BlockNode> node, Pair2D& origin, FILE* outfile);
 
 // Compute dimensions of optimal packing
 Pair2D computeOptimalPackingDims(const shared_ptr<BlockNode> root);
 map<Pair2D, pair<const Pair2D, const Pair2D>> computeOptimalPackingDimsUtil(shared_ptr<BlockNode> node);
-
 // Determine optimal packing coordinates and write to file
-void determineOptimalPacking(shared_ptr<BlockNode> root, const string& fname);
-void determineOptimalPackingUtil(shared_ptr<BlockNode> node, const Pair2D& origin, FILE* outfile);
+void determineOptimalPacking(shared_ptr<BlockNode> node, Pair2D& origin, FILE* outfile);
+
+// Wrapper to write packing to file
+void writePackingDims(shared_ptr<BlockNode> node, Pair2D (*computeDimFunc)(shared_ptr<BlockNode>), const string& fname);
+void writePackingCoords(shared_ptr<BlockNode> root, void (*packingFunc) (shared_ptr<BlockNode>, Pair2D&, FILE*), const string& fname);

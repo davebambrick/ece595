@@ -127,21 +127,7 @@ Pair2D computeFirstPackingDims(shared_ptr<BlockNode> node) {
 	return dims;
 }
 
-void writePackingDims(shared_ptr<BlockNode> node, Pair2D (*computeDimFunc)(shared_ptr<BlockNode>), const string& fname) {
-	FILE* outfile{fopen(fname.c_str(), "w")};
-	Pair2D pair{computeDimFunc(node)};
-	fprintf(outfile, "(%d,%d)\n", pair.x, pair.y);
-	fclose(outfile);
-}
-
-void determineFirstPacking(shared_ptr<BlockNode> root, const string& fname) {
-	Pair2D origin{0, 0};
-	FILE* outfile{fopen(fname.c_str(), "w")};	
-	determineFirstPackingUtil(root, origin, outfile);
-	fclose(outfile);
-}
-
-void determineFirstPackingUtil(shared_ptr<BlockNode> node, Pair2D& origin, FILE* outfile) {
+void determineFirstPacking(shared_ptr<BlockNode> node, Pair2D& origin, FILE* outfile) {
 	// base case: single rectangle is set at the current origin
 	if  (node->label != -1) {
 		Pair2D dims{node->firstDims};
@@ -153,16 +139,16 @@ void determineFirstPackingUtil(shared_ptr<BlockNode> node, Pair2D& origin, FILE*
 			// left subtree is above horizontal cut; shift
 			// origin of left subtree by height of right subtree
 			Pair2D newOrigin{origin + Pair2D(0,node->right->firstDims.y)};
-			determineFirstPackingUtil(node->left, newOrigin, outfile);
+			determineFirstPacking(node->left, newOrigin, outfile);
 			// right subtree is below horizontal cut
-			determineFirstPackingUtil(node->right, origin, outfile);
+			determineFirstPacking(node->right, origin, outfile);
 		// vertical cut
 		} else {
 			// left subtree is to left of cut
-			determineFirstPackingUtil(node->left, origin, outfile);
+			determineFirstPacking(node->left, origin, outfile);
 			// right subtree is to right of cut
 			Pair2D newOrigin{origin + Pair2D(node->left->firstDims.x, 0)};
-			determineFirstPackingUtil(node->right, newOrigin, outfile);
+			determineFirstPacking(node->right, newOrigin, outfile);
 		}
 	}
 }
@@ -177,7 +163,7 @@ map<Pair2D, pair<const Pair2D, const Pair2D>> computeOptimalPackingDimsUtil(shar
 		map<Pair2D, pair<const Pair2D, const Pair2D>> mapRight{computeOptimalPackingDimsUtil(node->right)};
 		for (auto const& x : mapLeft) {
 			for (auto const& y : mapRight) {
-				Pair2D dims;
+				Pair2D dims {};
 				// horizontal cut
 				if (node->cutType == "H") {
 					dims = getHorizCutDims(x.first, y.first);
@@ -196,18 +182,56 @@ map<Pair2D, pair<const Pair2D, const Pair2D>> computeOptimalPackingDimsUtil(shar
 Pair2D computeOptimalPackingDims(shared_ptr<BlockNode> root) {
 	map<Pair2D, pair<const Pair2D, const Pair2D>> dimMap{computeOptimalPackingDimsUtil(root)};
 	int bestArea{INT_MAX};
-	Pair2D bestDims;
+	Pair2D bestDims {};
 	for (auto const& v : dimMap) {
 		if (v.first.x * v.first.y < bestArea) {
 			bestArea = v.first.x * v.first.y;
 			bestDims = v.first;
 		}
 	}
+	root->bestDims = bestDims;
 	return bestDims;
 }
-void determineOptimalPacking(shared_ptr<BlockNode> root, const string& fname) {
 
+void determineOptimalPacking(shared_ptr<BlockNode> node, Pair2D& origin, FILE* outfile) {
+	// base case: single rectangle is set at the current origin
+	if  (node->label != -1) {
+		Pair2D dims{node->bestDims};
+		fprintf(outfile, "%d((%d,%d)(%d,%d))\n",
+			node->label, dims.x, dims.y, origin.x, origin.y);
+	} else {
+		pair<const Pair2D, const Pair2D> predPairs{node->dimMap[node->bestDims]};
+		node->left->bestDims = predPairs.first;
+		node->right->bestDims = predPairs.second;
+		// horizontal cut
+		if (node->cutType == "H") {
+			// left subtree is above horizontal cut; shift
+			// origin of left subtree by height of right subtree
+			Pair2D newOrigin{origin + Pair2D(0,predPairs.second.y)};
+			determineOptimalPacking(node->left, newOrigin, outfile);
+			// right subtree is below horizontal cut
+			determineOptimalPacking(node->right, origin, outfile);
+		// vertical cut
+		} else {
+			// left subtree is to left of cut
+			determineOptimalPacking(node->left, origin, outfile);
+			// right subtree is to right of cut
+			Pair2D newOrigin{origin + Pair2D(predPairs.first.x, 0)};
+			determineOptimalPacking(node->right, newOrigin, outfile);
+		}
+	}
 }
-void determineOptimalPackingUtil(shared_ptr<BlockNode> node, Pair2D& origin, FILE* outfile) {
 
+void writePackingDims(shared_ptr<BlockNode> node, Pair2D (*computeDimFunc)(shared_ptr<BlockNode>), const string& fname) {
+	FILE* outfile{fopen(fname.c_str(), "w")};
+	Pair2D pair{computeDimFunc(node)};
+	fprintf(outfile, "(%d,%d)\n", pair.x, pair.y);
+	fclose(outfile);
+}
+
+void writePackingCoords(shared_ptr<BlockNode> root, void (*packingFunc) (shared_ptr<BlockNode>, Pair2D&, FILE*), const string& fname) {
+	Pair2D origin{0, 0};
+	FILE* outfile{fopen(fname.c_str(), "w")};
+	packingFunc(root, origin, outfile);
+	fclose(outfile);
 }
