@@ -9,6 +9,7 @@ using namespace std;
 struct Pair2D {
 	int x, y;
 	// constructor
+	Pair2D();
 	Pair2D(int x, int y);
 	// operators
 	Pair2D operator+(const Pair2D& other);
@@ -27,27 +28,32 @@ struct BlockNode {
 	int label;
 	string cutType;
 	vector<Pair2D> dimVec;
-	shared_ptr<struct BlockNode> left;
-	shared_ptr<struct BlockNode> right;
+
+	Pair2D bestDims;
+
+	shared_ptr<BlockNode> left;
+	shared_ptr<BlockNode> right;
 
 	BlockNode(const NodeData& data); // from data struct
 
 };
-typedef shared_ptr<BlockNode> BlockNodePtr;
 // Tree construction methods
-BlockNodePtr newNode(NodeData& data);
-BlockNodePtr buildTree(const string& inFileName);
-
+shared_ptr<BlockNode> newNode(NodeData& data);
+shared_ptr<BlockNode> buildTree(const string& inFileName);
+// Utility function to clear internal node dimensions
+void clearInternalNodeDims(shared_ptr<BlockNode> root);
+// Wrapper to write packing to file
+void writePackingDims(shared_ptr<BlockNode> node, Pair2D (*dimFunc)(shared_ptr<BlockNode>), const string& fname);
 // Compute dimensions of first packing
-Pair2D computeFirstPackingDims(BlockNodePtr node);
-void writePackingDims(Pair2D& pair, const string& fname);
-
+Pair2D computeFirstPackingDims(shared_ptr<BlockNode> node);
 // Determine first-option packing coordinates and write to file
-void determinePacking(BlockNodePtr root, const string& fname);
-void determinePackingUtil(BlockNodePtr node, Pair2D& origin, FILE* outfile);
+void determineFirstPacking(shared_ptr<BlockNode> root, const string& fname);
+void determineFirstPackingUtil(shared_ptr<BlockNode> node, Pair2D& origin, FILE* outfile);
 
 // Compute dimensions of optimal packing
-Pair2D computeOptimalPackingDims(BlockNodePtr node);
+Pair2D computeOptimalPackingDims(shared_ptr<BlockNode> root);
+vector<Pair2D> computeOptimalPackingDimsUtil(shared_ptr<BlockNode> node);
+
 // Determine optimal packing coordinates and write to file
-void determineOptimalPacking(BlockNodePtr root, const string& fname);
-void determineOptimalPackingUtil(BlockNodePtr node, Pair2D& origin, FILE* outfile);
+void determineOptimalPacking(shared_ptr<BlockNode> root, const string& fname);
+void determineOptimalPackingUtil(shared_ptr<BlockNode> node, Pair2D& origin, FILE* outfile);
