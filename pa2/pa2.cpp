@@ -34,7 +34,7 @@ BlockNode::BlockNode(const NodeData& data) : label(data.label),
 	cutType(data.cutType),  dimVec(data.dimVec) {}
 // wrapper function to create new BlockNodes via shared_ptrs
 shared_ptr<BlockNode> newNode(NodeData& data) {
-    shared_ptr<BlockNode> nodePtr = make_shared<BlockNode>(data);
+    shared_ptr<BlockNode> nodePtr{make_shared<BlockNode>(data)};
     return nodePtr;
 }
 // builds a tree from a text file
@@ -104,8 +104,8 @@ Pair2D computeFirstPackingDims(shared_ptr<BlockNode> node) {
 	if  (node->label != -1) {
 		dims = node->dimVec.front();
 	} else {
-		Pair2D d1 = computeFirstPackingDims(node->left);
-		Pair2D d2 = computeFirstPackingDims(node->right);
+		Pair2D d1{computeFirstPackingDims(node->left)};
+		Pair2D d2{computeFirstPackingDims(node->right)};
 		// horizontal cut
 		if (node->cutType == "H") {
 			dims = getHorizCutDims(d1,d2);
@@ -120,15 +120,15 @@ Pair2D computeFirstPackingDims(shared_ptr<BlockNode> node) {
 }
 
 void writePackingDims(shared_ptr<BlockNode> node, Pair2D (*dimFunc)(shared_ptr<BlockNode>), const string& fname) {
-	FILE* outfile = fopen(fname.c_str(), "w");
-	Pair2D pair = dimFunc(node);
+	FILE* outfile{fopen(fname.c_str(), "w")};
+	Pair2D pair{dimFunc(node)};
 	fprintf(outfile, "(%d,%d)\n", pair.x, pair.y);
 	fclose(outfile);
 }
 
 void determineFirstPacking(shared_ptr<BlockNode> root, const string& fname) {
-	Pair2D origin(0,0);
-	FILE* outfile = fopen(fname.c_str(), "w");	
+	Pair2D origin{0, 0};
+	FILE* outfile{fopen(fname.c_str(), "w")};	
 	determineFirstPackingUtil(root, origin, outfile);
 	fclose(outfile);
 }
@@ -136,7 +136,7 @@ void determineFirstPacking(shared_ptr<BlockNode> root, const string& fname) {
 void determineFirstPackingUtil(shared_ptr<BlockNode> node, Pair2D& origin, FILE* outfile) {
 	// base case: single rectangle is set at the current origin
 	if  (node->label != -1) {
-		Pair2D dims = node->dimVec.front();
+		Pair2D dims{node->dimVec.front()};
 		fprintf(outfile, "%d((%d,%d)(%d,%d))\n", 
 			node->label, dims.x, dims.y, origin.x, origin.y);
 	} else {
@@ -144,7 +144,7 @@ void determineFirstPackingUtil(shared_ptr<BlockNode> node, Pair2D& origin, FILE*
 		if (node->cutType == "H") {
 			// left subtree is above horizontal cut; shift
 			// origin of left subtree by height of right subtree
-			Pair2D newOrigin = origin + Pair2D(0,node->right->dimVec.front().y);
+			Pair2D newOrigin{origin + Pair2D(0,node->right->dimVec.front().y)};
 			determineFirstPackingUtil(node->left, newOrigin, outfile);
 			// right subtree is below horizontal cut
 			determineFirstPackingUtil(node->right, origin, outfile);
@@ -153,7 +153,7 @@ void determineFirstPackingUtil(shared_ptr<BlockNode> node, Pair2D& origin, FILE*
 			// left subtree is to left of cut
 			determineFirstPackingUtil(node->left, origin, outfile);
 			// right subtree is to right of cut
-			Pair2D newOrigin = origin + Pair2D(node->left->dimVec.front().x, 0);
+			Pair2D newOrigin{origin + Pair2D(node->left->dimVec.front().x, 0)};
 			determineFirstPackingUtil(node->right, newOrigin, outfile);
 		}
 	}
@@ -165,8 +165,8 @@ vector<Pair2D> computeOptimalPackingDimsUtil(shared_ptr<BlockNode> node) {
 		return node->dimVec;
 	// internal nodes
 	} else {
-		vector<Pair2D> vecLeft = computeOptimalPackingDimsUtil(node->left);
-		vector<Pair2D> vecRight = computeOptimalPackingDimsUtil(node->right);
+		vector<Pair2D> vecLeft{computeOptimalPackingDimsUtil(node->left)};
+		vector<Pair2D> vecRight{computeOptimalPackingDimsUtil(node->right)};
 		for (int i = 0;  i < vecLeft.size(); i++) {
 			for (int j = 0;  j < vecRight.size(); j++) {
 				Pair2D dims;
@@ -185,8 +185,8 @@ vector<Pair2D> computeOptimalPackingDimsUtil(shared_ptr<BlockNode> node) {
 }
 
 Pair2D computeOptimalPackingDims(shared_ptr<BlockNode> root) {
-	vector<Pair2D> dimVec = computeOptimalPackingDimsUtil(root);
-	int bestArea = INT_MAX;
+	vector<Pair2D> dimVec{computeOptimalPackingDimsUtil(root)};
+	int bestArea{INT_MAX};
 	Pair2D bestDims;
 	for (auto v : dimVec) {
 		if (v.x * v.y < bestArea) {
